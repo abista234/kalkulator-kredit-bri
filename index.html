@@ -84,8 +84,11 @@
             border:1.5px solid var(--bri-blue);color:var(--bri-blue)}
   .empty{color:var(--muted);font-size:14px;text-align:center;padding:18px 6px}
   footer{max-width:760px;margin:0 auto;padding:0 14px 34px;font-size:12.5px;color:var(--muted);text-align:center;line-height:1.7}
+  .wa-link{display:inline-block;margin-top:12px;padding:12px 22px;border-radius:11px;
+           background:#128c4b;color:#fff;font-weight:700;font-size:14.5px;text-decoration:none}
+  .wa-link:active,.wa-link:hover{background:#0e7a41}
   @media print{
-    header .brand p,.seg,.chips,.actions,.hint,.btn{display:none!important}
+    header .brand p,.seg,.chips,.actions,.hint,.btn,.wa-link{display:none!important}
     body{background:#fff}
     .card{border:none;box-shadow:none;padding:0}
     .table-wrap{max-height:none;overflow:visible;border:none}
@@ -184,9 +187,8 @@
 </main>
 
 <footer>
-  Cicilan tetap dihitung dengan rumus <b>A = P × i ÷ (1 − (1+i)⁻ⁿ)</b>, dengan i = bunga tahunan ÷ 12.<br>
-  Angka pada simulasi ini bersifat indikatif — angka resmi mengikuti perhitungan bank.<br>
-  Ada yang ingin ditanyakan? Silakan mampir ke Kantor BRI Unit Sengon, kami siap membantu.
+  Angka pada simulasi ini bersifat indikatif — angka resmi mengikuti perhitungan bank.
+  <a class="wa-link" href="https://wa.me/6288233556495" target="_blank" rel="noopener">💬 Tanya via WhatsApp</a>
 </footer>
 
 <script>
