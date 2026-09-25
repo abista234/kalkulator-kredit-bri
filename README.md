@@ -1,14 +1,14 @@
 # Kalkulator Kredit BRI — Unit Sengon
 
-Simulasi angsuran kredit dengan sistem **annuitas**:
+Simulasi angsuran kredit dengan **cicilan tetap tiap bulan**:
 
 - **KUR** — bunga 6% per tahun
 - **Umum** — bunga 22% per tahun
 
 ## Fitur
 - Cicilan per bulan, total bunga, total yang dikembalikan
-- Tabel amortisasi lengkap (tanggal jatuh tempo, angsuran, pokok, bunga, sisa saldo)
-- Unduh CSV & cetak/PDF
+- Rincian angsuran bulanan (bulanan: angsuran, pokok, bunga, sisa hutang)
+- Ekspor ke gambar (PNG) & cetak/PDF
 - Mobile-friendly, tanpa backend
 
 ## Rumus
