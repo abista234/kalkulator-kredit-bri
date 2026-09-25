@@ -59,6 +59,7 @@
   .res{background:#f7f9fd;border:1px solid var(--line);border-radius:12px;padding:12px}
   .res .k{font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
   .res .v{font-size:20px;font-weight:800;margin-top:3px;word-break:break-word}
+  .res .hint{font-size:12.5px;color:var(--muted);margin-top:5px}
   .res.main{grid-column:1/-1;background:linear-gradient(135deg,var(--bri-blue),var(--bri-blue-2));border:none;color:#fff}
   .res.main .k{color:rgba(255,255,255,.85)}
   .res.main .v{font-size:30px}
@@ -78,10 +79,13 @@
        cursor:pointer;background:#eef4fd;color:var(--bri-blue)}
   .btn.primary{background:var(--bri-blue);color:#fff}
   .btn.orange{background:var(--bri-orange);color:#fff}
+  .btn.wa{background:#128c4b;color:#fff}
+  .btn.mini{min-width:0;width:100%;padding:8px 10px;font-size:13px;margin-top:9px;background:#fff;
+            border:1.5px solid var(--bri-blue);color:var(--bri-blue)}
   .empty{color:var(--muted);font-size:14px;text-align:center;padding:18px 6px}
   footer{max-width:760px;margin:0 auto;padding:0 14px 34px;font-size:12px;color:var(--muted);text-align:center}
   @media print{
-    header .brand p,.seg,.chips,.actions,.hint{display:none!important}
+    header .brand p,.seg,.chips,.actions,.hint,.btn{display:none!important}
     body{background:#fff}
     .card{border:none;box-shadow:none;padding:0}
     .table-wrap{max-height:none;overflow:visible;border:none}
@@ -140,21 +144,42 @@
     </div>
   </section>
 
+  <section class="card" id="balikCard">
+    <h2>Simulasi Balik</h2>
+    <p class="sub">Isi kemampuan bayar nasabah per bulan → berapa plafon maksimal yang bisa diajukan.</p>
+    <div class="field">
+      <label for="kemampuan">Kemampuan Bayar Nasabah</label>
+      <div class="input-wrap">
+        <span class="prefix">Rp</span>
+        <input type="text" id="kemampuan" inputmode="numeric" placeholder="1.000.000" autocomplete="off">
+      </div>
+      <div class="chips" id="kemampuanChips">
+        <span class="chip" data-v="500000">500 rb</span>
+        <span class="chip" data-v="1000000">1 jt</span>
+        <span class="chip" data-v="2000000">2 jt</span>
+        <span class="chip" data-v="5000000">5 jt</span>
+      </div>
+    </div>
+    <div id="balikHasil" class="results"></div>
+    <div class="empty" id="balikKosong" style="display:none">Isi kemampuan bayar nasabah (dan jangka waktu di atas) untuk melihat plafon maksimal.</div>
+  </section>
+
   <section class="card" id="hasilCard">
     <h2>Hasil Simulasi</h2>
     <p class="sub">Angka di bawah ini adalah perkiraan, mengikuti perhitungan cicilan tetap.</p>
     <div id="hasil" class="results"></div>
     <div class="empty" id="kosong" style="display:none">Masukkan plafon &amp; jangka waktu yang valid.</div>
+    <div class="actions">
+      <button class="btn wa" id="btnShare">📲 Bagikan ke WhatsApp</button>
+      <button class="btn primary" id="btnGambar">🖼 Ekspor ke Gambar</button>
+      <button class="btn orange" id="btnPrint">🖨 Cetak / PDF</button>
+    </div>
   </section>
 
   <section class="card" id="tabelCard">
     <h2>Rincian Angsuran Bulanan</h2>
     <p class="sub">Setiap bulan angsuran dibagi menjadi pokok, bunga, dan sisa hutang.</p>
     <div id="tabelHost"></div>
-    <div class="actions">
-      <button class="btn primary" id="btnGambar">🖼 Ekspor ke Gambar</button>
-      <button class="btn orange" id="btnPrint">🖨 Cetak / PDF</button>
-    </div>
   </section>
 </main>
 
@@ -211,6 +236,35 @@ function hitungKredit(pokok, n, rateT){
   return { cicilan: bulat, totalBunga: Math.round(totalBunga),
            totalBayar: Math.round(totalBayar), jadwal };
 }
+
+/**
+ * SIMULASI BALIK: dari kemampuan bayar bulanan → plafon maksimal.
+ * Dibulatkan ke bawah kelipatan Rp100.000 supaya cicilan tidak melebihi kemampuan.
+ */
+function plafonMaksimal(cicilanBln, n, rateT){
+  const i = rateT / 12;
+  if (!isFinite(cicilanBln) || cicilanBln <= 0 || !isFinite(n) || n < 1) return 0;
+  const p = i === 0 ? cicilanBln * n : cicilanBln * (1 - Math.pow(1 + i, -n)) / i;
+  if (!isFinite(p) || p <= 0) return 0;
+  return Math.floor(p / 100000) * 100000;
+}
+
+/** Teks ringkasan untuk dibagikan ke WhatsApp. */
+function teksBagikan(d){
+  const nama = d.tipe === "kur" ? "KUR" : "Umum";
+  return [
+    "Simulasi Kredit BRI — Unit Sengon",
+    "Tipe: " + nama + " (bunga " + (d.rate * 100).toFixed(0) + "%/tahun)",
+    "Plafon: " + fmtRp(d.pokok),
+    "Jangka waktu: " + d.n + " bulan",
+    "Angsuran per bulan: " + fmtRp(d.cicilan),
+    "Total bunga: " + fmtRp(d.totalBunga),
+    "Total yang dikembalikan: " + fmtRp(d.totalBayar),
+    "",
+    "Catatan: simulasi bersifat indikatif, angka resmi mengikuti sistem & SIK bank.",
+    "BRI Unit Sengon"
+  ].join("\n");
+}
 /* ===== CORE_END ===== */
 
 /* ===== DOM ===== */
@@ -225,6 +279,55 @@ function hitungKredit(pokok, n, rateT){
     });
   }
 
+  function formatRupiahInput(el){
+    const raw = el.value.replace(/[^\d]/g, "");
+    el.value = raw === "" ? "" : parseInt(raw, 10).toLocaleString("id-ID");
+    return raw;
+  }
+
+  /* ---------- SIMULASI BALIK ---------- */
+  function renderBalik(){
+    const kemampuan = parseRp($("kemampuan").value);
+    const n = parseInt($("tenor").value, 10);
+    const valid = isFinite(kemampuan) && kemampuan > 0 && isFinite(n) && n >= 1 && n <= 600;
+    $("balikHasil").style.display = valid ? "grid" : "none";
+    $("balikKosong").style.display = valid ? "none" : "block";
+    if (!valid) return;
+
+    const box = (key, label) => {
+      const maks = plafonMaksimal(kemampuan, n, TIPERate[key]);
+      const cicilan = maks > 0 ? hitungKredit(maks, n, TIPERate[key]).cicilan : 0;
+      return `
+        <div class="res">
+          <div class="k">${label}</div>
+          <div class="v">${maks > 0 ? fmtRp(maks) : "Tidak memenuhi"}</div>
+          <div class="hint">${maks > 0 ? "Cicilan ± " + fmtRp(cicilan) + "/bulan" : "Kemampuan bayar terlalu kecil"}</div>
+          ${maks > 0 ? `<button class="btn mini" data-pakai="${maks}">Pakai plafon ini</button>` : ""}
+        </div>`;
+    };
+    $("balikHasil").innerHTML =
+      box("kur", "Plafon Maks · KUR 6%") + box("umum", "Plafon Maks · Umum 22%");
+  }
+
+  $("kemampuan").addEventListener("input", () => {
+    setChip("kemampuanChips", formatRupiahInput($("kemampuan")));
+    renderBalik();
+  });
+  document.querySelectorAll("#kemampuanChips .chip").forEach(c => c.addEventListener("click", () => {
+    $("kemampuan").value = parseInt(c.dataset.v,10).toLocaleString("id-ID");
+    setChip("kemampuanChips", c.dataset.v);
+    renderBalik();
+  }));
+  $("balikHasil").addEventListener("click", e => {
+    const b = e.target.closest("[data-pakai]"); if (!b) return;
+    const v = parseInt(b.dataset.pakai, 10);
+    $("plafon").value = v.toLocaleString("id-ID");
+    setChip("plafonChips", v);
+    render();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  /* ---------- HASIL + TABEL ---------- */
   function render(){
     const pokok = parseRp($("plafon").value);
     const n = parseInt($("tenor").value, 10);
@@ -232,6 +335,7 @@ function hitungKredit(pokok, n, rateT){
     $("hasil").style.display = valid ? "grid" : "none";
     $("kosong").style.display = valid ? "none" : "block";
     $("tabelCard").style.display = valid ? "block" : "none";
+    renderBalik();
     if (!valid){ cache = null; return; }
 
     const rate = TIPERate[tipe];
@@ -276,23 +380,20 @@ function hitungKredit(pokok, n, rateT){
       </div>`;
   }
 
-  /* ---- ekspor hasil + rincian menjadi gambar PNG ---- */
-  function eksporGambar(){
-    if (!cache) return;
+  /* ---------- GAMBAR (ekspor) ---------- */
+  function renderKeCanvas(){
     const { h, pokok, n, rate, tipe: tp } = cache;
     const namaTipe = tp === "kur" ? "KUR" : "Umum";
     const W = 900, pad = 28, rowH = 27;
-    const colX = [pad, pad + 70, pad + 300, pad + 500, pad + 680, W - pad];  // batas kolom
+    const colX = [pad, pad + 70, pad + 300, pad + 500, pad + 680, W - pad];
     const H = 300 + (n + 1) * rowH + 70;
 
     const c = document.createElement("canvas");
     c.width = W; c.height = H;
     const g = c.getContext("2d");
 
-    // latar
     g.fillStyle = "#ffffff"; g.fillRect(0, 0, W, H);
 
-    // header
     g.fillStyle = "#00418d"; g.fillRect(0, 0, W, 118);
     g.fillStyle = "#ff6b00"; g.fillRect(0, 118, W, 5);
     g.fillStyle = "#ffffff";
@@ -303,7 +404,6 @@ function hitungKredit(pokok, n, rateT){
     g.font = "400 14px Arial"; g.fillStyle = "rgba(255,255,255,.85)";
     g.fillText("Bersifat indikatif — angka resmi mengikuti sistem & SIK bank.", pad, 100);
 
-    // ringkasan
     const ring = [
       ["Plafon Pinjaman", fmtRp(pokok)],
       ["Jangka Waktu", n + " bulan"],
@@ -324,21 +424,17 @@ function hitungKredit(pokok, n, rateT){
     });
     y = 158 + 3 * 34 + 6;
 
-    // judul tabel
     g.fillStyle = "#12203a"; g.font = "700 17px Arial"; g.textAlign = "left";
     g.fillText("RINCIAN ANGSURAN BULANAN", pad, y); y += 16;
 
-    // header tabel
     g.fillStyle = "#00418d"; g.fillRect(pad, y, W - pad * 2, 34);
     g.fillStyle = "#ffffff"; g.font = "700 13px Arial";
-    const heads = ["Bulan ke-", "Angsuran", "Pokok", "Bunga", "Sisa Hutang"];
-    heads.forEach((t, i) => {
+    ["Bulan ke-", "Angsuran", "Pokok", "Bunga", "Sisa Hutang"].forEach((t, i) => {
       g.textAlign = i === 0 ? "left" : "right";
       g.fillText(t, i === 0 ? colX[0] + 8 : colX[i + 1] - 8, y + 22);
     });
     y += 34;
 
-    // isi tabel
     g.font = "400 14px Arial";
     h.jadwal.forEach((r, idx) => {
       if (idx % 2 === 1){ g.fillStyle = "#f4f6fa"; g.fillRect(pad, y, W - pad * 2, rowH); }
@@ -352,7 +448,6 @@ function hitungKredit(pokok, n, rateT){
       y += rowH;
     });
 
-    // footer tabel
     g.fillStyle = "#eef4fd"; g.fillRect(pad, y, W - pad * 2, 34);
     g.fillStyle = "#00418d"; g.font = "700 14px Arial"; g.textAlign = "left";
     g.fillText("Total", colX[0] + 8, y + 22);
@@ -363,22 +458,73 @@ function hitungKredit(pokok, n, rateT){
     g.fillText("0", colX[5] - 8, y + 22);
     y += 34 + 26;
 
-    // catatan kaki
     g.fillStyle = "#657393"; g.font = "400 13px Arial"; g.textAlign = "left";
     g.fillText("Dihitung dengan cicilan tetap: A = P × i ÷ (1 − (1+i)⁻ⁿ), i = bunga tahunan ÷ 12.", pad, y);
     y += 20;
     g.fillText("BRI Unit Sengon · Kalkulator Kredit BRI", pad, y);
-
-    c.toBlob(blob => {
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `rincian_${namaTipe}_${pokok}_${n}bln.png`;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-    }, "image/png");
+    return c;
   }
 
-  // tipe pinjaman
+  function namaFileGambar(){
+    const { pokok, n, tipe: tp } = cache;
+    return `rincian_${tp === "kur" ? "KUR" : "Umum"}_${pokok}_${n}bln.png`;
+  }
+
+  function unduhBlob(blob, nama){
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = nama;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  }
+
+  function eksporGambar(){
+    if (!cache) return;
+    renderKeCanvas().toBlob(b => unduhBlob(b, namaFileGambar()), "image/png");
+  }
+
+  function teksShare(){
+    const { h, pokok, n, rate, tipe: tp } = cache;
+    return teksBagikan({ tipe: tp, rate, pokok, n, cicilan: h.cicilan,
+                         totalBunga: h.totalBunga, totalBayar: h.totalBayar });
+  }
+
+  function bukaWhatsApp(text){
+    window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
+  }
+
+  /* ---------- BAGIKAN KE WHATSAPP ---------- */
+  function bagikanWA(){
+    if (!cache) return;
+    const text = teksShare();
+    const canvas = renderKeCanvas();
+    const nama = namaFileGambar();
+
+    // 1) HP: native share → teks + gambar langsung ke aplikasi WhatsApp
+    try {
+      if (navigator.canShare && navigator.share){
+        const dataUrl = canvas.toDataURL("image/png");
+        const bin = atob(dataUrl.split(",")[1]);
+        const arr = new Uint8Array(bin.length);
+        for (let k = 0; k < bin.length; k++) arr[k] = bin.charCodeAt(k);
+        const file = new File([arr], nama, { type: "image/png" });
+        if (navigator.canShare({ files: [file] })){
+          navigator.share({ files: [file], text }).catch(err => {
+            if (err && err.name === "AbortError") return;
+            bukaWhatsApp(text);
+            canvas.toBlob(b => unduhBlob(b, nama), "image/png");
+          });
+          return;
+        }
+      }
+    } catch (e) { /* lanjut ke cara kedua */ }
+
+    // 2) Browser biasa: buka WhatsApp Web + unduh gambar untuk dilampirkan
+    bukaWhatsApp(text);
+    canvas.toBlob(b => unduhBlob(b, nama), "image/png");
+  }
+
+  /* ---------- EVENT ---------- */
   $("seg").addEventListener("click", e => {
     const b = e.target.closest("button"); if (!b) return;
     tipe = b.dataset.type;
@@ -386,10 +532,8 @@ function hitungKredit(pokok, n, rateT){
     render();
   });
 
-  $("plafon").addEventListener("input", e => {
-    const raw = e.target.value.replace(/[^\d]/g, "");
-    e.target.value = raw === "" ? "" : parseInt(raw,10).toLocaleString("id-ID");
-    setChip("plafonChips", raw);
+  $("plafon").addEventListener("input", () => {
+    setChip("plafonChips", formatRupiahInput($("plafon")));
     render();
   });
   document.querySelectorAll("#plafonChips .chip").forEach(c => c.addEventListener("click", () => {
@@ -403,6 +547,7 @@ function hitungKredit(pokok, n, rateT){
     $("tenor").value = c.dataset.v; setChip("tenorChips", c.dataset.v); render();
   }));
 
+  $("btnShare").addEventListener("click", bagikanWA);
   $("btnGambar").addEventListener("click", eksporGambar);
   $("btnPrint").addEventListener("click", () => window.print());
 
