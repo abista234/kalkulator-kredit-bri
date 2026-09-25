@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalkulator Kredit BRI — Unit Sengon</title>
+<meta name="description" content="Simulasi angsuran kredit BRI (KUR 6% & Umum 22%) dengan sistem bunga annuitas + tabel amortisasi.">
+<style>
+  :root{
+    --bri-blue:#00418d; --bri-blue-2:#0a5bb5; --bri-orange:#ff6b00;
+    --bg:#f4f6fa; --card:#ffffff; --ink:#12203a; --muted:#657393;
+    --line:#e3e8f0; --ok:#0f9d58; --warn:#d93025;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    background:var(--bg); color:var(--ink); font-size:16px; line-height:1.5;
+  }
+  header{
+    background:linear-gradient(135deg,var(--bri-blue),var(--bri-blue-2));
+    color:#fff; padding:20px 16px 18px;
+  }
+  header .brand{display:flex;align-items:center;gap:10px}
+  .logo{
+    width:38px;height:38px;border-radius:9px;background:var(--bri-orange);
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;letter-spacing:.5px;
+    color:#fff;flex:none
+  }
+  header h1{font-size:18px;margin:0;font-weight:700}
+  header p{margin:3px 0 0;font-size:12.5px;opacity:.85}
+  main{max-width:760px;margin:0 auto;padding:16px 14px 40px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 15px;margin-bottom:14px;
+        box-shadow:0 1px 2px rgba(16,32,64,.05)}
+  .card h2{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:0 0 12px;font-weight:700}
+  .seg{display:flex;gap:8px;margin-bottom:14px}
+  .seg button{
+    flex:1;padding:12px 8px;border-radius:11px;border:1.5px solid var(--line);background:#fff;
+    font-size:15px;font-weight:700;color:var(--muted);cursor:pointer;transition:.15s;line-height:1.25
+  }
+  .seg button small{display:block;font-weight:600;font-size:11.5px;opacity:.8;margin-top:2px}
+  .seg button.active{border-color:var(--bri-blue);background:#eef4fd;color:var(--bri-blue)}
+  .seg button.active[data-type="umum"]{border-color:var(--bri-orange);background:#fff3ea;color:#c85000}
+  label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin:0 0 6px}
+  .field{margin-bottom:14px}
+  .input-wrap{position:relative}
+  .input-wrap .prefix{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--muted);font-size:15px}
+  input[type=text],input[type=number],input[type=date]{
+    width:100%;padding:13px 13px 13px 40px;border:1.5px solid var(--line);border-radius:11px;
+    font-size:17px;font-weight:700;color:var(--ink);background:#fbfcfe;outline:none
+  }
+  input[type=date]{padding-left:13px}
+  input:focus{border-color:var(--bri-blue);background:#fff}
+  .chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+  .chip{padding:7px 13px;border-radius:20px;border:1.5px solid var(--line);background:#fff;font-size:13px;
+        font-weight:700;color:var(--muted);cursor:pointer}
+  .chip.active{background:var(--bri-blue);border-color:var(--bri-blue);color:#fff}
+  .hint{font-size:12px;color:var(--muted);margin-top:6px}
+  .results{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .res{background:#f7f9fd;border:1px solid var(--line);border-radius:12px;padding:12px}
+  .res .k{font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+  .res .v{font-size:20px;font-weight:800;margin-top:3px;word-break:break-word}
+  .res.main{grid-column:1/-1;background:linear-gradient(135deg,var(--bri-blue),var(--bri-blue-2));border:none;color:#fff}
+  .res.main .k{color:rgba(255,255,255,.85)}
+  .res.main .v{font-size:30px}
+  .res.acc .v{color:var(--bri-orange)}
+  .table-wrap{overflow:auto;max-height:420px;border:1px solid var(--line);border-radius:11px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:520px}
+  thead th{position:sticky;top:0;background:var(--bri-blue);color:#fff;padding:9px 8px;text-align:right;
+           font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;z-index:1}
+  thead th:first-child,thead th:nth-child(2){text-align:left}
+  tbody td{padding:8px;text-align:right;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+  tbody td:first-child,tbody td:nth-child(2){text-align:left;color:var(--muted)}
+  tbody tr:nth-child(even){background:#fafbfd}
+  tfoot td{padding:9px 8px;text-align:right;font-weight:800;background:#eef4fd;border-top:2px solid var(--bri-blue)}
+  tfoot td:first-child{text-align:left}
+  .actions{display:flex;gap:9px;margin-top:12px;flex-wrap:wrap}
+  .btn{flex:1;min-width:140px;padding:12px;border-radius:11px;border:none;font-size:14.5px;font-weight:700;
+       cursor:pointer;background:#eef4fd;color:var(--bri-blue)}
+  .btn.primary{background:var(--bri-blue);color:#fff}
+  .btn.orange{background:var(--bri-orange);color:#fff}
+  .empty{color:var(--muted);font-size:14px;text-align:center;padding:18px 6px}
+  footer{max-width:760px;margin:0 auto;padding:0 14px 34px;font-size:12px;color:var(--muted);text-align:center}
+  @media print{
+    header .brand p,.seg,.chips,.actions,footer,.hint{display:none!important}
+    body{background:#fff}
+    .card{border:none;box-shadow:none;padding:0}
+    .table-wrap{max-height:none;overflow:visible;border:none}
+    thead th{background:#fff;color:#000;border-bottom:2px solid #000;position:static}
+    thead th{background:#eee;color:#111}
+    .res.main{background:#eee!important;color:#000!important;border:1px solid #999}
+    .res.main .k{color:#333!important}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">BRI</div>
+    <div>
+      <h1>Kalkulator Kredit BRI</h1>
+      <p>Unit Sengon · Simulasi angsuran sistem <b>annuitas</b></p>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <h2>Tipe Pinjaman</h2>
+    <div class="seg" id="seg">
+      <button data-type="kur" class="active">KUR<small>Bunga 6% / tahun</small></button>
+      <button data-type="umum">Umum<small>Bunga 22% / tahun</small></button>
+    </div>
+
+    <div class="field">
+      <label for="plafon">Plafon Pinjaman</label>
+      <div class="input-wrap">
+        <span class="prefix">Rp</span>
+        <input type="text" id="plafon" inputmode="numeric" value="50.000.000" autocomplete="off">
+      </div>
+      <div class="chips" id="plafonChips">
+        <span class="chip" data-v="10000000">10 jt</span>
+        <span class="chip" data-v="25000000">25 jt</span>
+        <span class="chip active" data-v="50000000">50 jt</span>
+        <span class="chip" data-v="100000000">100 jt</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="tenor">Jangka Waktu (bulan)</label>
+      <div class="input-wrap">
+        <input type="number" id="tenor" inputmode="numeric" value="24" min="1" max="600">
+      </div>
+      <div class="chips" id="tenorChips">
+        <span class="chip" data-v="12">12 bln</span>
+        <span class="chip active" data-v="24">24 bln</span>
+        <span class="chip" data-v="36">36 bln</span>
+        <span class="chip" data-v="48">48 bln</span>
+        <span class="chip" data-v="60">60 bln</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="mulai">Tanggal Jatuh Tempo Pertama</label>
+      <input type="date" id="mulai">
+      <div class="hint">Dipakai untuk menampilkan tanggal tiap angsuran pada tabel amortisasi.</div>
+    </div>
+  </section>
+
+  <section class="card" id="hasilCard">
+    <h2>Hasil Simulasi</h2>
+    <div id="hasil" class="results"></div>
+    <div class="empty" id="kosong" style="display:none">Masukkan plafon &amp; jangka waktu yang valid.</div>
+  </section>
+
+  <section class="card" id="tabelCard">
+    <h2>Tabel Amortisasi (Pokok · Bunga · Sisa Saldo)</h2>
+    <div id="tabelHost"></div>
+    <div class="actions">
+      <button class="btn primary" id="btnCsv">⬇ Unduh CSV</button>
+      <button class="btn orange" id="btnPrint">🖨 Cetak / PDF</button>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Simulasi bersifat indikatif. Bunga annuitas: <b>A = P × i ÷ (1 − (1+i)⁻ⁿ)</b>, i = bunga tahunan ÷ 12.
+  Angka resmi mengikuti sistem &amp; SIK bank. · BRI Unit Sengon
+</footer>
+
+<script>
+/* ===== CORE_START ===== */
+const TIPERate = { kur: 0.06, umum: 0.22 };
+
+function fmtRp(v){
+  const n = Math.round(v);
+  return "Rp" + n.toLocaleString("id-ID");
+}
+function parseRp(s){
+  const digits = String(s).replace(/[^\d]/g, "");
+  return digits === "" ? NaN : parseInt(digits, 10);
+}
+
+/**
+ * Simulasi kredit annuitas.
+ * @param {number} pokok  plafon (Rp)
+ * @param {number} n      tenor (bulan)
+ * @param {number} rateT  bunga tahunal (mis. 0.06)
+ * @returns {{cicilan:number,totalBunga:number,totalBayar:number,
+ *            jadwal:Array<{ke:number,tanggal:string,angsuran:number,pokok:number,bunga:number,sisa:number}>}}
+ */
+function hitungKredit(pokok, n, rateT, tanggalMulai){
+  const i = rateT / 12;
+  const faktor = Math.pow(1 + i, -n);
+  const cicilan = i === 0 ? pokok / n : pokok * i / (1 - faktor);
+  const bulat = Math.round(cicilan);
+
+  const jadwal = [];
+  let sisa = pokok;
+  let totalBunga = 0, totalBayar = 0;
+  const d0 = tanggalMulai ? new Date(tanggalMulai + "T00:00:00") : null;
+
+  for (let k = 1; k <= n; k++){
+    const bunga = Math.round(sisa * i);
+    let pokokBln, angsuran;
+    if (k === n){
+      pokokBln = sisa;                       // bulan terakhir menutup saldo
+      angsuran = pokokBln + bunga;
+    } else {
+      angsuran = bulat;
+      pokokBln = angsuran - bunga;
+      if (pokokBln > sisa){ pokokBln = sisa; angsuran = pokokBln + bunga; }
+      if (pokokBln < 0){ pokokBln = 0; angsuran = bunga; }
+    }
+    sisa = sisa - pokokBln;
+    totalBunga += bunga;
+    totalBayar += angsuran;
+
+    let tgl = "";
+    if (d0){
+      const d = new Date(d0);
+      d.setMonth(d.getMonth() + (k - 1));
+      tgl = d.toLocaleDateString("id-ID", { day:"2-digit", month:"short", year:"numeric" });
+    }
+    jadwal.push({ ke:k, tanggal:tgl, angsuran, pokok:pokokBln, bunga, sisa: Math.max(sisa,0) });
+    if (sisa <= 0 && k < n){                 // sisa lunas lebih awal (pembulatan)
+      break;
+    }
+  }
+  return {
+    cicilan: bulat,
+    totalBunga: Math.round(totalBunga),
+    totalBayar: Math.round(totalBayar),
+    jadwal
+  };
+}
+/* ===== CORE_END ===== */
+
+/* ===== DOM ===== */
+(function(){
+  const $ = id => document.getElementById(id);
+  let tipe = "kur";
+  let hasilCache = null;
+
+  // tanggal jatuh tempo pertama = hari ini + 30 hari
+  const now = new Date(); now.setDate(now.getDate() + 30);
+  $("mulai").value = now.toISOString().slice(0,10);
+
+  function setChip(group, val){
+    document.querySelectorAll("#"+group+" .chip").forEach(c=>{
+      c.classList.toggle("active", String(c.dataset.v) === String(val));
+    });
+  }
+
+  function bacaInput(){
+    const pokok = parseRp($("plafon").value);
+    const n = parseInt($("tenor").value, 10);
+    return { pokok, n };
+  }
+
+  function render(){
+    const { pokok, n } = bacaInput();
+    const valid = isFinite(pokok) && pokok > 0 && isFinite(n) && n >= 1 && n <= 600;
+    $("hasil").style.display = valid ? "grid" : "none";
+    $("kosong").style.display = valid ? "none" : "block";
+    $("tabelCard").style.display = valid ? "block" : "none";
+    if (!valid){ hasilCache = null; return; }
+
+    const rate = TIPERate[tipe];
+    const h = hitungKredit(pokok, n, rate, $("mulai").value);
+    hasilCache = { h, pokok, n, rate, tipe };
+
+    const namaTipe = tipe === "kur" ? "KUR" : "Umum";
+    $("hasil").innerHTML = `
+      <div class="res main">
+        <div class="k">Angsuran per bulan · ${namaTipe} ${(rate*100).toFixed(0)}%/thn</div>
+        <div class="v">${fmtRp(h.cicilan)}</div>
+      </div>
+      <div class="res"><div class="k">Pokok Pinjaman</div><div class="v">${fmtRp(pokok)}</div></div>
+      <div class="res acc"><div class="k">Total Bunga</div><div class="v">${fmtRp(h.totalBunga)}</div></div>
+      <div class="res"><div class="k">Total Yang Dikembalikan</div><div class="v">${fmtRp(h.totalBayar)}</div></div>
+      <div class="res"><div class="k">Jangka Waktu</div><div class="v">${n} bulan</div></div>`;
+
+    const rows = h.jadwal.map(r => `
+      <tr>
+        <td>${r.ke}</td>
+        <td>${r.tanggal || "-"}</td>
+        <td>${fmtRp(r.angsuran)}</td>
+        <td>${fmtRp(r.pokok)}</td>
+        <td>${fmtRp(r.bunga)}</td>
+        <td>${fmtRp(r.sisa)}</td>
+      </tr>`).join("");
+
+    $("tabelHost").innerHTML = `
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>No</th><th>Tanggal</th><th>Angsuran</th><th>Pokok</th><th>Bunga</th><th>Sisa Saldo</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+          <tfoot><tr>
+            <td colspan="2">Total</td>
+            <td>${fmtRp(h.totalBayar)}</td>
+            <td>${fmtRp(pokok)}</td>
+            <td>${fmtRp(h.totalBunga)}</td>
+            <td>0</td>
+          </tr></tfoot>
+        </table>
+      </div>`;
+  }
+
+  // tipe pinjaman
+  $("seg").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    tipe = b.dataset.type;
+    document.querySelectorAll("#seg button").forEach(x => x.classList.toggle("active", x === b));
+    render();
+  });
+
+  // format plafon saat diketik
+  $("plafon").addEventListener("input", e => {
+    const raw = e.target.value.replace(/[^\d]/g, "");
+    e.target.value = raw === "" ? "" : parseInt(raw,10).toLocaleString("id-ID");
+    setChip("plafonChips", raw);
+    render();
+  });
+  document.querySelectorAll("#plafonChips .chip").forEach(c => c.addEventListener("click", () => {
+    $("plafon").value = parseInt(c.dataset.v,10).toLocaleString("id-ID");
+    setChip("plafonChips", c.dataset.v);
+    render();
+  }));
+
+  $("tenor").addEventListener("input", e => {
+    setChip("tenorChips", e.target.value); render();
+  });
+  document.querySelectorAll("#tenorChips .chip").forEach(c => c.addEventListener("click", () => {
+    $("tenor").value = c.dataset.v; setChip("tenorChips", c.dataset.v); render();
+  }));
+
+  $("mulai").addEventListener("change", render);
+
+  $("btnCsv").addEventListener("click", () => {
+    if (!hasilCache) return;
+    const { h, pokok, rate, tipe:tp } = hasilCache;
+    const head = ["No","Tanggal","Angsuran","Pokok","Bunga","Sisa Saldo"];
+    const lines = [
+      `Kalkulator Kredit BRI - ${tp.toUpperCase()} ${(rate*100).toFixed(0)}%/tahun`,
+      `Plafon,${pokok},Tenor,${h.jadwal.length} bulan,Cicilan/bulan,${h.cicilan}`,
+      `Total Bunga,${h.totalBunga},Total Kembali,${h.totalBayar}`, "",
+      head.join(";")
+    ];
+    h.jadwal.forEach(r => lines.push([r.ke, r.tanggal, r.angsuran, r.pokok, r.bunga, r.sisa].join(";")));
+    const blob = new Blob(["\uFEFF" + lines.join("\n")], { type:"text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `amortisasi_${tp.toUpperCase()}_${pokok}_${h.jadwal.length}bln.csv`;
+    a.click(); URL.revokeObjectURL(a.href);
+  });
+
+  $("btnPrint").addEventListener("click", () => window.print());
+
+  render();
+})();
+</script>
+</body>
+</html>
