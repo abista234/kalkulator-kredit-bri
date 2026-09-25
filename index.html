@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kalkulator Kredit BRI — Unit Sengon</title>
-<meta name="description" content="Simulasi angsuran kredit BRI (KUR 6% & Umum 22%) dengan cicilan tetap tiap bulan + rincian angsuran.">
+<meta name="description" content="Hitung sendiri angsuran kredit BRI (KUR 6% & Umum 22%) — cepat, mudah, dan langsung kelihatan rinciannya.">
 <style>
   :root{
     --bri-blue:#00418d; --bri-blue-2:#0a5bb5; --bri-orange:#ff6b00;
@@ -33,7 +33,7 @@
   .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 15px;margin-bottom:14px;
         box-shadow:0 1px 2px rgba(16,32,64,.05)}
   .card h2{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:0 0 4px;font-weight:700}
-  .card .sub{font-size:12.5px;color:var(--muted);margin:0 0 12px}
+  .card .sub{font-size:13px;color:var(--muted);margin:0 0 12px}
   .seg{display:flex;gap:8px;margin-bottom:14px}
   .seg button{
     flex:1;padding:12px 8px;border-radius:11px;border:1.5px solid var(--line);background:#fff;
@@ -83,7 +83,7 @@
   .btn.mini{min-width:0;width:100%;padding:8px 10px;font-size:13px;margin-top:9px;background:#fff;
             border:1.5px solid var(--bri-blue);color:var(--bri-blue)}
   .empty{color:var(--muted);font-size:14px;text-align:center;padding:18px 6px}
-  footer{max-width:760px;margin:0 auto;padding:0 14px 34px;font-size:12px;color:var(--muted);text-align:center}
+  footer{max-width:760px;margin:0 auto;padding:0 14px 34px;font-size:12.5px;color:var(--muted);text-align:center;line-height:1.7}
   @media print{
     header .brand p,.seg,.chips,.actions,.hint,.btn{display:none!important}
     body{background:#fff}
@@ -101,22 +101,22 @@
     <div class="logo">BRI</div>
     <div>
       <h1>Kalkulator Kredit BRI</h1>
-      <p>Unit Sengon · Simulasi angsuran dengan cicilan tetap tiap bulan</p>
+      <p>Unit Sengon · Hitung sendiri angsuran Anda, cepat dan mudah</p>
     </div>
   </div>
 </header>
 
 <main>
   <section class="card">
-    <h2>Tipe Pinjaman</h2>
-    <p class="sub">Pilih jenis pinjaman, isi plafon dan jangka waktunya.</p>
+    <h2>Pilih Pinjaman</h2>
+    <p class="sub">Tentukan jenis pinjamannya, isi berapa uang yang dibutuhkan dan lamanya — rincian angsurannya langsung muncul di bawah.</p>
     <div class="seg" id="seg">
       <button data-type="kur" class="active">KUR<small>Bunga 6% / tahun</small></button>
       <button data-type="umum">Umum<small>Bunga 22% / tahun</small></button>
     </div>
 
     <div class="field">
-      <label for="plafon">Plafon Pinjaman</label>
+      <label for="plafon">Jumlah Pinjaman</label>
       <div class="input-wrap">
         <span class="prefix">Rp</span>
         <input type="text" id="plafon" inputmode="numeric" value="50.000.000" autocomplete="off">
@@ -130,7 +130,7 @@
     </div>
 
     <div class="field">
-      <label for="tenor">Jangka Waktu (bulan)</label>
+      <label for="tenor">Lama Pinjaman (bulan)</label>
       <div class="input-wrap">
         <input type="number" id="tenor" inputmode="numeric" value="24" min="1" max="600">
       </div>
@@ -146,9 +146,9 @@
 
   <section class="card" id="balikCard">
     <h2>Simulasi Balik</h2>
-    <p class="sub">Isi kemampuan bayar nasabah per bulan → berapa plafon maksimal yang bisa diajukan.</p>
+    <p class="sub">Bayar berapa setiap bulan? Isi angkanya, nanti kami bantu hitungkan pinjaman maksimal yang bisa Anda ajukan.</p>
     <div class="field">
-      <label for="kemampuan">Kemampuan Bayar Nasabah</label>
+      <label for="kemampuan">Besar Cicilan yang Sanggup Dibayar</label>
       <div class="input-wrap">
         <span class="prefix">Rp</span>
         <input type="text" id="kemampuan" inputmode="numeric" placeholder="1.000.000" autocomplete="off">
@@ -161,14 +161,14 @@
       </div>
     </div>
     <div id="balikHasil" class="results"></div>
-    <div class="empty" id="balikKosong" style="display:none">Isi kemampuan bayar nasabah (dan jangka waktu di atas) untuk melihat plafon maksimal.</div>
+    <div class="empty" id="balikKosong" style="display:none">Isi besaran cicilan yang sanggup Anda bayar (dan lamanya di atas), lalu hasilnya langsung kelihatan di sini.</div>
   </section>
 
   <section class="card" id="hasilCard">
     <h2>Hasil Simulasi</h2>
-    <p class="sub">Angka di bawah ini adalah perkiraan, mengikuti perhitungan cicilan tetap.</p>
+    <p class="sub">Berikut perkiraan angsuran Anda. Tenang, semua angka bisa dihitung ulang kapan saja.</p>
     <div id="hasil" class="results"></div>
-    <div class="empty" id="kosong" style="display:none">Masukkan plafon &amp; jangka waktu yang valid.</div>
+    <div class="empty" id="kosong" style="display:none">Isi jumlah pinjaman dan lamanya di atas, ya — hasilnya langsung muncul di sini.</div>
     <div class="actions">
       <button class="btn wa" id="btnShare">📲 Bagikan ke WhatsApp</button>
       <button class="btn primary" id="btnGambar">🖼 Ekspor ke Gambar</button>
@@ -178,14 +178,15 @@
 
   <section class="card" id="tabelCard">
     <h2>Rincian Angsuran Bulanan</h2>
-    <p class="sub">Setiap bulan angsuran dibagi menjadi pokok, bunga, dan sisa hutang.</p>
+    <p class="sub">Setiap bulan, angsuran Anda terbagi jadi tiga: pokok pinjaman, bunga, dan sisa hutang.</p>
     <div id="tabelHost"></div>
   </section>
 </main>
 
 <footer>
-  Simulasi bersifat indikatif. Cicilan tetap dihitung: <b>A = P × i ÷ (1 − (1+i)⁻ⁿ)</b>, i = bunga tahunan ÷ 12.
-  Angka resmi mengikuti sistem &amp; SIK bank. · BRI Unit Sengon
+  Cicilan tetap dihitung dengan rumus <b>A = P × i ÷ (1 − (1+i)⁻ⁿ)</b>, dengan i = bunga tahunan ÷ 12.<br>
+  Angka pada simulasi ini bersifat indikatif — angka resmi mengikuti perhitungan bank.<br>
+  Ada yang ingin ditanyakan? Silakan mampir ke Kantor BRI Unit Sengon, kami siap membantu.
 </footer>
 
 <script>
@@ -201,9 +202,9 @@ function parseRp(s){
 }
 
 /**
- * Simulasi angsuran dengan cicilan tetap (annuitas).
- * @param {number} pokok  plafon (Rp)
- * @param {number} n      tenor (bulan)
+ * Perkiraan angsuran dengan cicilan tetap (annuitas).
+ * @param {number} pokok  jumlah pinjaman (Rp)
+ * @param {number} n      lama pinjaman (bulan)
  * @param {number} rateT  bunga tahunal (mis. 0.06)
  */
 function hitungKredit(pokok, n, rateT){
@@ -238,7 +239,7 @@ function hitungKredit(pokok, n, rateT){
 }
 
 /**
- * SIMULASI BALIK: dari kemampuan bayar bulanan → plafon maksimal.
+ * SIMULASI BALIK: dari cicilan yang sanggup dibayar per bulan → pinjaman maksimal.
  * Dibulatkan ke bawah kelipatan Rp100.000 supaya cicilan tidak melebihi kemampuan.
  */
 function plafonMaksimal(cicilanBln, n, rateT){
@@ -255,13 +256,13 @@ function teksBagikan(d){
   return [
     "Simulasi Kredit BRI — Unit Sengon",
     "Tipe: " + nama + " (bunga " + (d.rate * 100).toFixed(0) + "%/tahun)",
-    "Plafon: " + fmtRp(d.pokok),
-    "Jangka waktu: " + d.n + " bulan",
+    "Jumlah pinjaman: " + fmtRp(d.pokok),
+    "Lama pinjaman: " + d.n + " bulan",
     "Angsuran per bulan: " + fmtRp(d.cicilan),
     "Total bunga: " + fmtRp(d.totalBunga),
     "Total yang dikembalikan: " + fmtRp(d.totalBayar),
     "",
-    "Catatan: simulasi bersifat indikatif, angka resmi mengikuti sistem & SIK bank.",
+    "Catatan: angka ini bersifat indikatif, angka resmi mengikuti perhitungan bank.",
     "BRI Unit Sengon"
   ].join("\n");
 }
@@ -300,13 +301,13 @@ function teksBagikan(d){
       return `
         <div class="res">
           <div class="k">${label}</div>
-          <div class="v">${maks > 0 ? fmtRp(maks) : "Tidak memenuhi"}</div>
-          <div class="hint">${maks > 0 ? "Cicilan ± " + fmtRp(cicilan) + "/bulan" : "Kemampuan bayar terlalu kecil"}</div>
-          ${maks > 0 ? `<button class="btn mini" data-pakai="${maks}">Pakai plafon ini</button>` : ""}
+          <div class="v">${maks > 0 ? fmtRp(maks) : "Belum cukup"}</div>
+          <div class="hint">${maks > 0 ? "Perkiraan cicilan ± " + fmtRp(cicilan) + "/bulan" : "Cicilan tersebut masih terlalu kecil"}</div>
+          ${maks > 0 ? `<button class="btn mini" data-pakai="${maks}">Gunakan Nominal Ini</button>` : ""}
         </div>`;
     };
     $("balikHasil").innerHTML =
-      box("kur", "Plafon Maks · KUR 6%") + box("umum", "Plafon Maks · Umum 22%");
+      box("kur", "Pinjaman Maks · KUR 6%") + box("umum", "Pinjaman Maks · Umum 22%");
   }
 
   $("kemampuan").addEventListener("input", () => {
@@ -348,10 +349,10 @@ function teksBagikan(d){
         <div class="k">Angsuran per bulan · ${namaTipe} ${(rate*100).toFixed(0)}%/thn</div>
         <div class="v">${fmtRp(h.cicilan)}</div>
       </div>
-      <div class="res"><div class="k">Pokok Pinjaman</div><div class="v">${fmtRp(pokok)}</div></div>
+      <div class="res"><div class="k">Jumlah Pinjaman</div><div class="v">${fmtRp(pokok)}</div></div>
       <div class="res acc"><div class="k">Total Bunga</div><div class="v">${fmtRp(h.totalBunga)}</div></div>
       <div class="res"><div class="k">Total Yang Dikembalikan</div><div class="v">${fmtRp(h.totalBayar)}</div></div>
-      <div class="res"><div class="k">Jangka Waktu</div><div class="v">${n} bulan</div></div>`;
+      <div class="res"><div class="k">Lama Pinjaman</div><div class="v">${n} bulan</div></div>`;
 
     const rows = h.jadwal.map(r => `
       <tr>
@@ -402,11 +403,11 @@ function teksBagikan(d){
     g.font = "400 16px Arial";
     g.fillText(`Simulasi ${namaTipe} · bunga ${(rate*100).toFixed(0)}% per tahun · cicilan tetap`, pad, 74);
     g.font = "400 14px Arial"; g.fillStyle = "rgba(255,255,255,.85)";
-    g.fillText("Bersifat indikatif — angka resmi mengikuti sistem & SIK bank.", pad, 100);
+    g.fillText("Bersifat indikatif — angka resmi mengikuti perhitungan bank.", pad, 100);
 
     const ring = [
-      ["Plafon Pinjaman", fmtRp(pokok)],
-      ["Jangka Waktu", n + " bulan"],
+      ["Jumlah Pinjaman", fmtRp(pokok)],
+      ["Lama Pinjaman", n + " bulan"],
       ["Angsuran per bulan", fmtRp(h.cicilan)],
       ["Total Bunga", fmtRp(h.totalBunga)],
       ["Total Yang Dikembalikan", fmtRp(h.totalBayar)],
