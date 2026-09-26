@@ -4,12 +4,11 @@ Hitung sendiri angsuran **KUR** (bunga 6% per tahun) — cepat, mudah, bisa dibu
 
 ## Fitur
 - Perkiraan angsuran per bulan, total bunga, total yang dikembalikan
-- **Biaya & dana awal**: admin (Rp50rb < Rp50 jt, Rp100rb >= Rp50 jt), asuransi
-  Kesehatan & Usaha Rp400rb, blokir saldo 2x angsuran → total disiapkan & dana yang dapat digunakan
 - Rincian angsuran bulanan (angsuran, pokok, bunga, sisa hutang)
 - **Simulasi balik**: isi cicilan yang sanggup dibayar → pinjaman maksimal
-- **Perbandingan dengan Bank BKK (bunga flat 9%)**
-- **Bagikan ke WhatsApp** (teks + gambar), ekspor PNG, cetak/PDF
+- **Perbandingan dengan Bank BKK (bunga flat 9%)** — cicilan & selisih per bulan
+- **Bagikan ke WhatsApp**: teks ringkasan + gambar rincian siap kirim
+- Ekspor ke gambar (PNG) & cetak/PDF
 
 ## Rumus
 - KUR (annuitas): `A = P x i / (1 - (1+i)^-n)`, `i = bunga tahunan / 12`
