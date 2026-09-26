@@ -457,7 +457,7 @@ function teksBagikan(d){
 
   /* ---------- GAMBAR (ekspor) ---------- */
   function renderKeCanvas(){
-    const { h, pokok, n, rate, banding } = cache;
+    const { h, pokok, n, rate } = cache;
     const namaTipe = "KUR";
     const W = 900, pad = 28, rowH = 27;
     const colX = [pad, pad + 70, pad + 300, pad + 500, pad + 680, W - pad];
@@ -465,11 +465,9 @@ function teksBagikan(d){
     const ring = [
       ["Jumlah Pinjaman", fmtRp(pokok)],
       ["Lama Pinjaman", n + " bulan"],
-      ["Angsuran per bulan (KUR 6%)", fmtRp(h.cicilan)],
+      ["Angsuran per bulan", fmtRp(h.cicilan)],
       ["Total Bunga", fmtRp(h.totalBunga)],
       ["Total Yang Dikembalikan", fmtRp(h.totalBayar)],
-      ["Angsuran Bank BKK (flat 9%)", banding ? fmtRp(banding.bkk.cicilan) : "-"],
-      ["Selisih", banding ? fmtRp(Math.abs(banding.selisihBln)) + "/bulan" : "-"],
     ];
     const rowsRing = Math.ceil(ring.length / 2);
     const yJudulTabel = 158 + rowsRing * 34 + 6;
