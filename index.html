@@ -172,13 +172,6 @@
     </div>
   </section>
 
-  <section class="card" id="biayaCard">
-    <h2>Biaya &amp; Dana Awal</h2>
-    <p class="sub">Biar tidak kaget saat pencairan — ini rincian potongan di awal dan dana yang siap Anda gunakan.</p>
-    <div id="biayaHasil" class="results"></div>
-    <div class="empty" id="biayaKosong" style="display:none">Isi jumlah pinjaman dan lamanya di atas untuk melihat rincian biayanya.</div>
-  </section>
-
   <section class="card" id="bandingCard">
     <h2>Perbandingan Cicilan</h2>
     <p class="sub">Biar makin yakin — ini perbandingannya dengan Bank BKK (bunga flat 9%) untuk jumlah dan lama pinjaman yang sama.</p>
@@ -285,27 +278,6 @@ function plafonMaksimalFlat(cicilanBln, n, rateT){
   return Math.floor(p / 100000) * 100000;
 }
 
-/* --- Biaya awal saat pencairan --- */
-const ASURANSI_AWAL = 400000;   // asuransi Kesehatan + Usaha (sekali di awal)
-const ADMIN_MAKS = 50000000;    // admin Rp50rb di bawah ini, Rp100rb ke atas
-
-/**
- * Rincian potongan di awal:
- *  - biaya admin: Rp50.000 (plafon < Rp50 jt) / Rp100.000 (plafon ≥ Rp50 jt)
- *  - asuransi Kesehatan & Usaha: Rp400.000
- *  - blokir saldo: 2 × angsuran
- * Dana yang dapat digunakan = plafon − (admin + asuransi + blokir).
- */
-function hitungBiayaAwal(pokok, cicilanBln){
-  if (!isFinite(pokok) || pokok <= 0 || !isFinite(cicilanBln) || cicilanBln <= 0) return null;
-  const admin = pokok < ADMIN_MAKS ? 50000 : 100000;
-  const asuransi = ASURANSI_AWAL;
-  const blokir = Math.round(2 * cicilanBln);
-  const total = admin + asuransi + blokir;
-  return { admin, asuransi, blokir, total, dana: Math.max(pokok - total, 0),
-           minus: pokok - total < 0 };
-}
-
 /** Teks ringkasan untuk dibagikan ke WhatsApp. */
 function teksBagikan(d){
   const nama = "KUR";
@@ -398,46 +370,6 @@ function teksBagikan(d){
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
 
-  /* ---------- BIAYA & DANA AWAL ---------- */
-  function renderBiaya(pokok, n, cicilan){
-    const valid = isFinite(pokok) && pokok > 0 && isFinite(n) && n >= 1 &&
-                  isFinite(cicilan) && cicilan > 0;
-    $("biayaHasil").style.display = valid ? "grid" : "none";
-    $("biayaKosong").style.display = valid ? "none" : "block";
-    if (!valid) return null;
-
-    const b = hitungBiayaAwal(pokok, cicilan);
-    const aturanAdmin = pokok < ADMIN_MAKS ? "plafon di bawah Rp50 juta" : "plafon Rp50 juta ke atas";
-    $("biayaHasil").innerHTML = `
-      <div class="res">
-        <div class="k">Biaya Admin</div>
-        <div class="v">${fmtRp(b.admin)}</div>
-        <div class="hint">${aturanAdmin}</div>
-      </div>
-      <div class="res">
-        <div class="k">Asuransi Kesehatan &amp; Usaha</div>
-        <div class="v">${fmtRp(b.asuransi)}</div>
-        <div class="hint">dibayar sekali di awal</div>
-      </div>
-      <div class="res">
-        <div class="k">Blokir Saldo (2 × angsuran)</div>
-        <div class="v">${fmtRp(b.blokir)}</div>
-        <div class="hint">2 × ${fmtRp(cicilan)} per bulan</div>
-      </div>
-      <div class="res acc">
-        <div class="k">Total yang Disiapkan</div>
-        <div class="v">${fmtRp(b.total)}</div>
-        <div class="hint">biaya admin + asuransi + blokir saldo</div>
-      </div>
-      <div class="res main">
-        <div class="k">Dana yang Dapat Digunakan</div>
-        <div class="v">${fmtRp(b.dana)}</div>
-        <div class="hint">Plafon ${fmtRp(pokok)} − total disiapkan ${fmtRp(b.total)}${
-          b.minus ? " · plafon terlalu kecil untuk menutup biaya awal" : ""}</div>
-      </div>`;
-    return b;
-  }
-
   /* ---------- PERBANDINGAN (BRI KUR vs Bank BKK) ---------- */
   function renderBanding(pokok, n){
     const valid = isFinite(pokok) && pokok > 0 && isFinite(n) && n >= 1 && n <= 600;
@@ -480,11 +412,10 @@ function teksBagikan(d){
     $("tabelCard").style.display = valid ? "block" : "none";
     renderBalik();
     const banding = valid ? renderBanding(pokok, n) : (renderBanding(NaN, 0), null);
-    if (!valid){ renderBiaya(NaN, 0, 0); cache = null; return; }
+    if (!valid){ cache = null; return; }
 
     const rate = TIPERate.kur;
     const h = hitungKredit(pokok, n, rate);
-    renderBiaya(pokok, n, h.cicilan);
     cache = { h, pokok, n, rate, tipe, banding };
 
     $("hasil").innerHTML = `
