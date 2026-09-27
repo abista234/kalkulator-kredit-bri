@@ -78,24 +78,16 @@
   .btn.mini{min-width:0;width:100%;padding:8px 10px;font-size:13px;margin-top:9px;background:#fff;
             border:1.5px solid var(--bri-blue);color:var(--bri-blue)}
   .pas-list{border:1px solid var(--line);border-radius:11px;overflow:hidden;margin-top:10px}
-  .pas-row{display:grid;grid-template-columns:88px 1fr auto;align-items:center;gap:4px 10px;
-           padding:11px 12px;border-top:1px solid var(--line)}
+  .pas-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 10px;
+           padding:10px 12px;border-top:1px solid var(--line)}
   .pas-row:first-child{border-top:none}
   .pas-row:nth-child(even){background:#fafbfd}
   .pas-tenor{grid-column:1;grid-row:1;font-size:14px;font-weight:800;color:var(--ink)}
   .pas-tenor small{display:block;font-weight:600;color:var(--muted);font-size:11.5px}
-  .pas-nilai{grid-column:2;grid-row:1;min-width:0}
-  .pas-nilai .num{display:block;font-size:17px;font-weight:800;white-space:nowrap}
-  .pas-nilai small{display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin-top:2px}
-  .pas-row .btn.mini{grid-column:3;grid-row:1;flex:none;width:auto;margin-top:0;padding:9px 15px}
-  @media (max-width: 560px){
-    .pas-row{grid-template-columns:1fr auto;row-gap:4px;padding:10px}
-    .pas-tenor{grid-column:1;grid-row:1}
-    .pas-row .btn.mini{grid-column:2;grid-row:1;padding:8px 13px;font-size:13px}
-    .pas-nilai{grid-column:1/-1;grid-row:2}
-    .pas-nilai .num{font-size:19px}
-    .pas-nilai small{display:inline-block;margin-top:3px;margin-right:8px}
-  }
+  .pas-row .btn.mini{grid-column:2;grid-row:1;flex:none;width:auto;margin-top:0;padding:8px 14px;font-size:13.5px}
+  .pas-nilai{grid-column:1/-1;grid-row:2;min-width:0}
+  .pas-nilai .num{display:block;font-size:19px;font-weight:800;white-space:nowrap}
+  .pas-nilai small{display:inline-block;font-size:11.5px;font-weight:600;color:var(--muted);margin-top:3px;margin-right:8px}
   .empty{color:var(--muted);font-size:14px;text-align:center;padding:18px 6px}
   footer{max-width:760px;margin:0 auto;padding:0 14px 34px;font-size:12.5px;color:var(--muted);text-align:center;line-height:1.7}
   .wa-link{display:inline-block;margin-top:12px;padding:12px 22px;border-radius:11px;
