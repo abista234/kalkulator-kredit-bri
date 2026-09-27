@@ -77,6 +77,15 @@
   .btn.wa{background:#128c4b;color:#fff}
   .btn.mini{min-width:0;width:100%;padding:8px 10px;font-size:13px;margin-top:9px;background:#fff;
             border:1.5px solid var(--bri-blue);color:var(--bri-blue)}
+  .pas-list{border:1px solid var(--line);border-radius:11px;overflow:hidden;margin-top:10px}
+  .pas-row{display:flex;align-items:center;gap:10px;padding:11px 12px;border-top:1px solid var(--line)}
+  .pas-row:first-child{border-top:none}
+  .pas-row:nth-child(even){background:#fafbfd}
+  .pas-tenor{flex:0 0 88px;font-size:14px;font-weight:800;color:var(--ink)}
+  .pas-tenor small{display:block;font-weight:600;color:var(--muted);font-size:11.5px}
+  .pas-nilai{flex:1;font-size:17px;font-weight:800;word-break:break-word}
+  .pas-nilai small{display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin-top:2px}
+  .pas-row .btn.mini{flex:0 0 auto;width:auto;margin-top:0;padding:9px 15px}
   .empty{color:var(--muted);font-size:14px;text-align:center;padding:18px 6px}
   footer{max-width:760px;margin:0 auto;padding:0 14px 34px;font-size:12.5px;color:var(--muted);text-align:center;line-height:1.7}
   .wa-link{display:inline-block;margin-top:12px;padding:12px 22px;border-radius:11px;
@@ -332,35 +341,42 @@ function teksBagikan(d){
   }
 
   /* ---------- PLAFON YANG PAS BUATMU ---------- */
+  const TENOR_LIST = [
+    { n:12, l:"1 tahun" }, { n:18, l:"1,5 tahun" }, { n:24, l:"2 tahun" },
+    { n:30, l:"2,5 tahun" }, { n:36, l:"3 tahun" }, { n:48, l:"4 tahun" },
+    { n:60, l:"5 tahun" }
+  ];
+
   function renderBalik(){
     const pendapatan = parseRp($("kemampuan").value);
-    const n = parseInt($("tenor").value, 10);
-    const valid = isFinite(pendapatan) && pendapatan > 0 && isFinite(n) && n >= 1 && n <= 600;
+    const valid = isFinite(pendapatan) && pendapatan > 0;
     $("balikHasil").style.display = valid ? "grid" : "none";
     $("balikKosong").style.display = valid ? "none" : "block";
     if (!valid) return;
 
     const kapasitas = angsuranDariPendapatan(pendapatan);   // 75% dari pendapatan
 
-    const box = (label, kelas, maks, cicilanFn) => `
-      <div class="res ${kelas}">
-        <div class="k">${label}</div>
-        <div class="v">${maks > 0 ? fmtRp(maks) : "Belum cukup"}</div>
-        <div class="hint">${maks > 0 ? "Angsuran ± " + fmtRp(cicilanFn(maks)) + "/bulan"
-                                     : "Pendapatan tersebut masih terlalu kecil"}</div>
-        ${maks > 0 ? `<button class="btn mini" data-pakai="${maks}">Gunakan Nominal Ini</button>` : ""}
-      </div>`;
+    const rows = TENOR_LIST.map(t => {
+      const maks = plafonMaksimal(kapasitas, t.n, TIPERate.kur);
+      const cic = maks > 0 ? hitungKredit(maks, t.n, TIPERate.kur).cicilan : 0;
+      return `
+        <div class="pas-row">
+          <div class="pas-tenor">${t.n} bln<small>${t.l}</small></div>
+          <div class="pas-nilai">${maks > 0 ? fmtRp(maks) : "Belum cukup"}
+            <small>${maks > 0 ? "Angsuran ± " + fmtRp(cic) + "/bulan"
+                              : "Pendapatan tersebut masih terlalu kecil"}</small>
+          </div>
+          ${maks > 0 ? `<button class="btn mini" data-pakai="${maks}" data-tenor="${t.n}">Terapkan</button>` : ""}
+        </div>`;
+    }).join("");
 
-    const maksKur = plafonMaksimal(kapasitas, n, TIPERate.kur);
-    const maksBkk = plafonMaksimalFlat(kapasitas, n, BKK_FLAT);
     $("balikHasil").innerHTML = `
       <div class="res main">
         <div class="k">Angsuran Maksimal · 75% Pendapatan</div>
         <div class="v">${fmtRp(kapasitas)} /bulan</div>
         <div class="hint">dari pendapatan ${fmtRp(pendapatan)} per bulan</div>
-      </div>` +
-      box("Pinjaman Maks · KUR BRI 6%", "", maksKur, p => hitungKredit(p, n, TIPERate.kur).cicilan) +
-      box("Pinjaman Maks · Bank BKK 9% Flat", "bkk", maksBkk, p => hitungFlat(p, n, BKK_FLAT).cicilan);
+      </div>
+      <div class="pas-list" style="grid-column:1/-1">${rows}</div>`;
   }
 
   $("kemampuan").addEventListener("input", () => {
@@ -377,6 +393,10 @@ function teksBagikan(d){
     const v = parseInt(b.dataset.pakai, 10);
     $("plafon").value = v.toLocaleString("id-ID");
     setChip("plafonChips", v);
+    if (b.dataset.tenor){
+      $("tenor").value = b.dataset.tenor;
+      setChip("tenorChips", b.dataset.tenor);
+    }
     render();
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
