@@ -69,13 +69,20 @@
   tbody tr:nth-child(even){background:#fafbfd}
   tfoot td{padding:9px 8px;text-align:right;font-weight:800;background:#eef4fd;border-top:2px solid var(--bri-blue)}
   tfoot td:first-child{text-align:left}
-  .actions{display:flex;gap:9px;margin-top:12px;flex-wrap:wrap}
-  .btn{flex:1;min-width:140px;padding:12px;border-radius:11px;border:none;font-size:14.5px;font-weight:700;
-       cursor:pointer;background:#eef4fd;color:var(--bri-blue)}
+  .sub-blok{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);font-weight:700;
+            margin:18px 0 10px;padding-top:14px;border-top:1px dashed var(--line)}
+  .actions{display:flex;gap:8px;margin-top:14px}
+  .btn{flex:1 1 0;min-width:0;padding:11px 6px;border-radius:11px;border:1.5px solid transparent;
+       font-size:13.5px;font-weight:700;cursor:pointer;background:#eef4fd;color:var(--bri-blue);
+       display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;text-decoration:none}
+  .btn.outline{background:#fff;border-color:var(--bri-blue);color:var(--bri-blue)}
+  .btn.outline:hover{background:#eef4fd}
   .btn.primary{background:var(--bri-blue);color:#fff}
   .btn.orange{background:var(--bri-orange);color:#fff}
-  .btn.wa{background:#128c4b;color:#fff}
-  .btn.mini{min-width:0;width:100%;padding:8px 10px;font-size:13px;margin-top:9px;background:#fff;
+  .btn.ajukan{flex:none;width:100%;margin-top:9px;padding:13px 10px;font-size:15px;
+              background:#128c4b;border-color:#128c4b;color:#fff;gap:8px}
+  .btn.ajukan:hover{background:#0e7a41;border-color:#0e7a41}
+  .btn.mini{width:100%;padding:8px 10px;font-size:13px;margin-top:9px;background:#fff;
             border:1.5px solid var(--bri-blue);color:var(--bri-blue)}
   .pas-list{border:1px solid var(--line);border-radius:11px;overflow:hidden;margin-top:10px}
   .pas-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 10px;
@@ -116,7 +123,7 @@
 </header>
 
 <main>
-  <section class="card">
+  <section class="card" id="kurCard">
     <h2>Pinjaman KUR</h2>
     <p class="sub">Pinjaman Usaha Rakyat dengan bunga 6% per tahun. Isi berapa uang yang dibutuhkan dan lamanya — rinciannya langsung muncul di bawah.</p>
 
@@ -149,6 +156,19 @@
         <span class="chip" data-v="60">60 bln</span>
       </div>
     </div>
+
+    <div class="sub-blok">Hasil Simulasi</div>
+    <div id="hasil" class="results"></div>
+    <div class="empty" id="kosong" style="display:none">Isi jumlah pinjaman dan lamanya di atas, ya — hasilnya langsung muncul di sini.</div>
+    <div class="actions">
+      <button class="btn outline" id="btnShare">Bagikan</button>
+      <button class="btn outline" id="btnGambar">Download</button>
+      <button class="btn outline" id="btnPrint">Cetak PDF</button>
+    </div>
+    <a class="btn ajukan" href="https://wa.me/6288233556495" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm0 18.15h-.01c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.83 2.41a8.18 8.18 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.25 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.24-.64.8-.79.97-.14.16-.29.18-.54.06-.25-.13-1.05-.39-1.99-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.13-.15.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.35-.77-1.85-.2-.48-.4-.42-.56-.43h-.48c-.16 0-.43.06-.65.31-.22.25-.85.84-.85 2.04s.87 2.37 1 2.53c.12.17 1.72 2.62 4.17 3.68.58.25 1.04.4 1.4.51.58.19 1.11.16 1.53.1.47-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.06-.11-.22-.17-.47-.29z"/></svg>
+      Ajukan Pinjaman Sekarang!
+    </a>
   </section>
 
   <section class="card" id="balikCard">
@@ -169,18 +189,6 @@
     </div>
     <div id="balikHasil" class="results"></div>
     <div class="empty" id="balikKosong" style="display:none">Isi rata-rata pendapatanmu per bulan (dan lamanya di atas), lalu hasilnya langsung kelihatan di sini.</div>
-  </section>
-
-  <section class="card" id="hasilCard">
-    <h2>Hasil Simulasi</h2>
-    <p class="sub">Berikut perkiraan angsuran Anda. Tenang, semua angka bisa dihitung ulang kapan saja.</p>
-    <div id="hasil" class="results"></div>
-    <div class="empty" id="kosong" style="display:none">Isi jumlah pinjaman dan lamanya di atas, ya — hasilnya langsung muncul di sini.</div>
-    <div class="actions">
-      <button class="btn wa" id="btnShare">📲 Bagikan ke WhatsApp</button>
-      <button class="btn primary" id="btnGambar">🖼 Ekspor ke Gambar</button>
-      <button class="btn orange" id="btnPrint">🖨 Cetak / PDF</button>
-    </div>
   </section>
 
   <section class="card" id="bandingCard">
