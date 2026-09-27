@@ -141,10 +141,10 @@
   </section>
 
   <section class="card" id="balikCard">
-    <h2>Simulasi Balik</h2>
-    <p class="sub">Bayar berapa setiap bulan? Isi angkanya, nanti kami bantu hitungkan pinjaman maksimal yang bisa Anda ajukan.</p>
+    <h2>Plafon yang PAS buatmu</h2>
+    <p class="sub">Isi berapa rata rata pendapatanmu setiap bulan</p>
     <div class="field">
-      <label for="kemampuan">Besar Cicilan yang Sanggup Dibayar</label>
+      <label for="kemampuan">Rata-rata Pendapatan per Bulan</label>
       <div class="input-wrap">
         <span class="prefix">Rp</span>
         <input type="text" id="kemampuan" inputmode="numeric" placeholder="1.000.000" autocomplete="off">
@@ -157,7 +157,7 @@
       </div>
     </div>
     <div id="balikHasil" class="results"></div>
-    <div class="empty" id="balikKosong" style="display:none">Isi besaran cicilan yang sanggup Anda bayar (dan lamanya di atas), lalu hasilnya langsung kelihatan di sini.</div>
+    <div class="empty" id="balikKosong" style="display:none">Isi rata-rata pendapatanmu per bulan (dan lamanya di atas), lalu hasilnya langsung kelihatan di sini.</div>
   </section>
 
   <section class="card" id="hasilCard">
@@ -258,8 +258,17 @@ function hitungFlat(pokok, n, rateT){
   };
 }
 
+/* --- Plafon pas dari pendapatan bulanan --- */
+const PORSI_ANGSURAN = 0.75;    // 75% dari pendapatan dipakai untuk angsuran
+
+/** Bagian pendapatan yang dialokasikan untuk angsuran (75%). */
+function angsuranDariPendapatan(pendapatanBln){
+  if (!isFinite(pendapatanBln) || pendapatanBln <= 0) return 0;
+  return Math.round(pendapatanBln * PORSI_ANGSURAN);
+}
+
 /**
- * SIMULASI BALIK (KUR annuitas): dari cicilan per bulan → pinjaman maksimal.
+ * PLAFON PAS (KUR annuitas): dari cicilan per bulan → pinjaman maksimal.
  * Dibulatkan ke bawah kelipatan Rp100.000 supaya cicilan tidak melebihi kemampuan.
  */
 function plafonMaksimal(cicilanBln, n, rateT){
@@ -270,7 +279,7 @@ function plafonMaksimal(cicilanBln, n, rateT){
   return Math.floor(p / 100000) * 100000;
 }
 
-/** SIMULASI BALIK versi flat (Bank BKK): cicilan = pokok×(1/n + rate/12). */
+/** PLAFON PAS versi flat (Bank BKK): cicilan = pokok×(1/n + rate/12). */
 function plafonMaksimalFlat(cicilanBln, n, rateT){
   if (!isFinite(cicilanBln) || cicilanBln <= 0 || !isFinite(n) || n < 1) return 0;
   const p = cicilanBln / (1 / n + rateT / 12);
@@ -322,34 +331,36 @@ function teksBagikan(d){
     return raw;
   }
 
-  /* ---------- SIMULASI BALIK ---------- */
+  /* ---------- PLAFON YANG PAS BUATMU ---------- */
   function renderBalik(){
-    const kemampuan = parseRp($("kemampuan").value);
+    const pendapatan = parseRp($("kemampuan").value);
     const n = parseInt($("tenor").value, 10);
-    const valid = isFinite(kemampuan) && kemampuan > 0 && isFinite(n) && n >= 1 && n <= 600;
+    const valid = isFinite(pendapatan) && pendapatan > 0 && isFinite(n) && n >= 1 && n <= 600;
     $("balikHasil").style.display = valid ? "grid" : "none";
     $("balikKosong").style.display = valid ? "none" : "block";
     if (!valid) return;
 
-    const box = (label, maks, cicilanFn) => `
-      <div class="res">
+    const kapasitas = angsuranDariPendapatan(pendapatan);   // 75% dari pendapatan
+
+    const box = (label, kelas, maks, cicilanFn) => `
+      <div class="res ${kelas}">
         <div class="k">${label}</div>
         <div class="v">${maks > 0 ? fmtRp(maks) : "Belum cukup"}</div>
-        <div class="hint">${maks > 0 ? "Perkiraan cicilan ± " + fmtRp(cicilanFn(maks)) + "/bulan"
-                                     : "Cicilan tersebut masih terlalu kecil"}</div>
+        <div class="hint">${maks > 0 ? "Angsuran ± " + fmtRp(cicilanFn(maks)) + "/bulan"
+                                     : "Pendapatan tersebut masih terlalu kecil"}</div>
         ${maks > 0 ? `<button class="btn mini" data-pakai="${maks}">Gunakan Nominal Ini</button>` : ""}
       </div>`;
 
-    const maksKur = plafonMaksimal(kemampuan, n, TIPERate.kur);
-    const maksBkk = plafonMaksimalFlat(kemampuan, n, BKK_FLAT);
-    $("balikHasil").innerHTML =
-      box("Pinjaman Maks · KUR BRI 6%", maksKur, p => hitungKredit(p, n, TIPERate.kur).cicilan) +
-      `<div class="res bkk">
-         <div class="k">Pinjaman Maks · Bank BKK 9% Flat</div>
-         <div class="v">${maksBkk > 0 ? fmtRp(maksBkk) : "Belum cukup"}</div>
-         <div class="hint">${maksBkk > 0 ? "Perkiraan cicilan ± " + fmtRp(hitungFlat(maksBkk, n, BKK_FLAT).cicilan) + "/bulan"
-                                         : "Cicilan tersebut masih terlalu kecil"}</div>
-       </div>`;
+    const maksKur = plafonMaksimal(kapasitas, n, TIPERate.kur);
+    const maksBkk = plafonMaksimalFlat(kapasitas, n, BKK_FLAT);
+    $("balikHasil").innerHTML = `
+      <div class="res main">
+        <div class="k">Angsuran Maksimal · 75% Pendapatan</div>
+        <div class="v">${fmtRp(kapasitas)} /bulan</div>
+        <div class="hint">dari pendapatan ${fmtRp(pendapatan)} per bulan</div>
+      </div>` +
+      box("Pinjaman Maks · KUR BRI 6%", "", maksKur, p => hitungKredit(p, n, TIPERate.kur).cicilan) +
+      box("Pinjaman Maks · Bank BKK 9% Flat", "bkk", maksBkk, p => hitungFlat(p, n, BKK_FLAT).cicilan);
   }
 
   $("kemampuan").addEventListener("input", () => {
